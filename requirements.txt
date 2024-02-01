@@ -1,0 +1,11 @@
+# jupyter notebooks
+ipython
+# basic data science
+numpy
+matplotlib
+scipy
+# pytorch for XLA, autograd, primitives, etc.
+torch
+jaxtyping
+# transformerlens for the transformer model
+transformer_lens
