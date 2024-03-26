@@ -2,3 +2,6 @@
 - [DNN classifier playground](https://www.ccom.ucsd.edu/~cdeotte/programs/neuralnetwork.html)
 - [MNIST classifier playground](https://www.ccom.ucsd.edu/~cdeotte/programs/MNIST.html)
 - [implementing backprop](https://github.com/antonyxsik/NeuralNetExperiments/blob/55a8ea524802e9ab6c6e43adaab654aac736d0bd/NeuralNetFromScratch/model_NN.py#L115)
+- [Practical Deep Learning workshop](https://jxmo.io/deep-learning-workshop/)
+- [Stanford CS25](https://web.stanford.edu/class/cs25/)
+- [transformer circuits monosemantic features](https://transformer-circuits.pub/2023/monosemantic-features/vis/a1.html)
