@@ -5,3 +5,4 @@
 - [Practical Deep Learning workshop](https://jxmo.io/deep-learning-workshop/)
 - [Stanford CS25](https://web.stanford.edu/class/cs25/)
 - [transformer circuits monosemantic features](https://transformer-circuits.pub/2023/monosemantic-features/vis/a1.html)
+- [bayes group ML course](https://github.com/bayesgroup/HSE_ML_research_seminar_23_24)
