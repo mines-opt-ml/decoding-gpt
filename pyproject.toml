@@ -1,0 +1,77 @@
+[project]
+name = "decoding-gpt"
+version = "0.0.4"
+description = "course materials for CSM AMS course 'Decoding GPT'"
+authors = [
+	{ name = "Michael Ivanitskiy", email = "mivanits@mines.edu" },
+]
+readme = "README.md"
+requires-python = ">=3.11"
+
+
+dependencies = [
+	# standard scientific computing
+	"numpy",
+	"matplotlib",
+	"scipy",
+	"ipython",
+	# pytorch and transformers
+	"torch",
+	"jaxtyping",
+	"transformer_lens",
+	# custom utilities
+	"muutils>=0.6.19",
+	"zanj>=0.3.1",
+	"trnbl>=0.0.2",
+	"lmcat",
+]
+
+[dependency-groups]
+dev = [
+	# test
+	"pytest>=8.2.2",
+	# coverage
+	"pytest-cov>=4.1.0",
+	"coverage-badge>=1.1.0",
+	# type checking
+	"mypy>=1.0.1",
+	# docs
+	'pdoc>=14.6.0',
+	# tomli since no tomlib in python < 3.11
+	"tomli>=2.1.0; python_version < '3.11'",
+]
+lint = [
+	# lint
+	"pycln>=2.1.3",
+	"ruff>=0.4.8",
+]
+
+[tool.uv]
+default-groups = ["dev", "lint"]
+
+[project.urls]
+Homepage = "https://github.com/mines-opt-ml/decoding-gpt"
+Documentation = "https://github.com/mines-opt-ml/decoding-gpt"
+Repository = "https://github.com/mines-opt-ml/decoding-gpt"
+Issues = "https://github.com/mines-opt-ml/decoding-gpt/issues"
+
+# ruff config
+[tool.ruff]
+exclude = ["__pycache__"]
+
+[tool.ruff.format]
+indent-style = "tab"
+skip-magic-trailing-comma = false
+
+# Custom export configurations
+[tool.uv-exports]
+args = [
+	"--no-hashes"
+]
+exports = [
+	# no groups, no extras, just the base dependencies
+    { name = "base", groups = false, extras = false },
+	# all groups and extras
+    { name = "all", filename="requirements.txt", groups = true, extras=true },
+]
+
