@@ -6,7 +6,7 @@ authors = [
 	{ name = "Michael Ivanitskiy", email = "mivanits@mines.edu" },
 ]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 
 
 dependencies = [
@@ -15,8 +15,10 @@ dependencies = [
 	"matplotlib",
 	"scipy",
 	"ipython",
+	"ipykernel",
 	# pytorch and transformers
 	"torch",
+	"torchvision",
 	"jaxtyping",
 	"transformer_lens",
 	# custom utilities
