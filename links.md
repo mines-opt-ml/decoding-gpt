@@ -12,6 +12,7 @@
 
 # technical resources
 
+- [Transformer++](https://www.gleech.org/tplus)
 - [classical ML classifiers playground](https://www.ccom.ucsd.edu/~cdeotte/programs/classify.html)
 - [DNN classifier playground](https://www.ccom.ucsd.edu/~cdeotte/programs/neuralnetwork.html)
 - [MNIST classifier playground](https://www.ccom.ucsd.edu/~cdeotte/programs/MNIST.html)
