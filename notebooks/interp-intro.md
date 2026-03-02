@@ -86,11 +86,11 @@ Since $W_U$ maps the final residual stream to logits, we can apply it at *any* i
 
 $$\text{logits}^{(\ell)} = X^{(\ell)} W_U \in \mathbb{R}^{n_c \times d_v}$$
 
-This is the **logit lens** (nostalgebraist, 2020). It lets you watch the model's "best guess" evolve layer by layer.
+This is the **logit lens** ([nostalgebraist, 2020](https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens)). It lets you watch the model's "best guess" evolve layer by layer.
 
 ## The Tuned Lens
 
-The raw logit lens assumes intermediate representations live in the same space as the final layer, which is only approximately true. The **tuned lens** (Belrose et al., 2023) learns an affine probe per layer:
+The raw logit lens assumes intermediate representations live in the same space as the final layer, which is only approximately true. The **tuned lens** ([Belrose et al., 2023](https://arxiv.org/abs/2303.08112)) learns an affine probe per layer:
 
 $$\text{logits}^{(\ell)} = \bigl( X^{(\ell)} A_\ell + b_\ell \bigr) W_U$$
 
@@ -133,8 +133,8 @@ where $m$ is some metric (e.g., logit of the correct token, log-probability, los
 
 - **Noising (corrupted → clean patching):** Start from corrupted run, patch in clean activations. Measures whether a site is *sufficient* to restore the behavior.
 - **Denoising (clean → corrupted patching):** Start from clean run, patch in corrupted activations. Measures whether a site is *necessary* for the behavior.
-- **Path patching** (Goldowsky-Dill et al., 2023): Patch activations along specific edges in the computational graph (e.g., the output of attention head 7.3 as it feeds into MLP 8), not just at nodes. This gives finer-grained localization.
-- **Causal tracing** (Meng et al., 2022): A specific protocol using noise-corrupt-restore on factual recall tasks, which revealed that factual associations are primarily stored in MLP layers at the last subject token.
+- **Path patching** ([Goldowsky-Dill et al., 2023](https://arxiv.org/abs/2304.05969)): Patch activations along specific edges in the computational graph (e.g., the output of attention head 7.3 as it feeds into MLP 8), not just at nodes. This gives finer-grained localization.
+- **Causal tracing** ([Meng et al., 2022](https://arxiv.org/abs/2202.05262)): A specific protocol using noise-corrupt-restore on factual recall tasks, which revealed that factual associations are primarily stored in MLP layers at the last subject token.
 
 ## The Computational Graph
 
@@ -163,7 +163,7 @@ Originally from [Turner et al., 2023](https://arxiv.org/abs/2308.10248), activat
 
 ## Motivation
 
-The circuits research agenda (Olah et al., 2020; Elhage et al., 2021) aims to decompose neural networks into interpretable subgraphs — small collections of attention heads and MLP neurons that together implement a specific behavior. The goal is reverse engineering: convert the DNN subgraph into pseudocode.
+The circuits research agenda ([Olah et al., 2020](https://distill.pub/2020/circuits/zoom-in/); [Elhage et al., 2021](https://transformer-circuits.pub/2021/framework/index.html)) aims to decompose neural networks into interpretable subgraphs — small collections of attention heads and MLP neurons that together implement a specific behavior. The goal is reverse engineering: convert the DNN subgraph into pseudocode.
 
 ## Key Concepts
 
@@ -177,16 +177,16 @@ In practice, (3) is aspirational — the emphasis in automated methods is on (1)
 
 ## Manual Circuit Discovery
 
-The original Transformer Circuits Thread (Elhage et al., 2021; Olsson et al., 2022) presented hand-analyzed circuits:
+The original Transformer Circuits Thread ([Elhage et al., 2021](https://transformer-circuits.pub/2021/framework/index.html); [Olsson et al., 2022](https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html)) presented hand-analyzed circuits:
 
 - **Induction heads:** A two-head circuit (previous-token head + induction head) that implements the pattern "...A B ... A → B". This is a cornerstone result in mechanistic interpretability, underlying in-context learning and is found across model scales.
-- **Indirect Object Identification (IOI):** Wang et al. (2023) reverse-engineered a 26-head circuit in GPT-2 Small for the task "When Mary and John went to the store, John gave a drink to" → "Mary". They identified name mover heads, backup name mover heads, S-inhibition heads, and duplicate token heads, each with a clear functional role.
+- **Indirect Object Identification (IOI):** [Wang et al. (2023)](https://arxiv.org/abs/2211.00593) reverse-engineered a 26-head circuit in GPT-2 Small for the task "When Mary and John went to the store, John gave a drink to" → "Mary". They identified name mover heads, backup name mover heads, S-inhibition heads, and duplicate token heads, each with a clear functional role.
 
 The methodology is: (i) identify a narrow behavior, (ii) use activation patching to localize key components, (iii) analyze the attention patterns and OV/QK matrices of those components, (iv) validate by ablating the circuit and checking faithfulness.
 
 ## Automated Circuit Discovery: ACDC
 
-Manual circuit analysis is laborious and doesn't scale. **ACDC** (Conmy et al., 2023) automates the process:
+Manual circuit analysis is laborious and doesn't scale. **ACDC** ([Conmy et al., 2023](https://arxiv.org/abs/2304.14997)) automates the process:
 
 1. Start with the complete computational graph.
 2. For each edge, measure its importance via activation patching.
@@ -222,7 +222,7 @@ A discovered circuit should be tested for:
 
 ## Motivation
 
-Sometimes we don't need a full mechanistic account — we just want to know: does the model *represent* this concept, and where? Probing answers this by training a small classifier on top of frozen model activations. Originally from Alain and Bengio, 2016.
+Sometimes we don't need a full mechanistic account — we just want to know: does the model *represent* this concept, and where? Probing answers this by training a small classifier on top of frozen model activations. Originally from [Alain and Bengio, 2016](https://arxiv.org/abs/1610.01644).
 
 ## Setup
 
@@ -249,18 +249,18 @@ A **linear probe** restricts $g$ to be linear (or affine): $g_\ell(h) = W h + b$
 
 ## The Probe Complexity Debate
 
-If you use a powerful nonlinear probe (e.g., a 2-layer MLP), it might *learn* the concept from the activations rather than *detecting* it. The probe itself becomes a model. This is the "probing accuracy $\neq$ representation" critique (Hewitt & Liang, 2019; Ravichander et al., 2020).
+If you use a powerful nonlinear probe (e.g., a 2-layer MLP), it might *learn* the concept from the activations rather than *detecting* it. The probe itself becomes a model. This is the "probing accuracy $\neq$ representation" critique ([Hewitt & Liang, 2019](https://arxiv.org/abs/1909.03368); [Ravichander et al., 2020](https://arxiv.org/abs/2005.00719)).
 
 Mitigations:
-- **Selectivity** (Hewitt & Liang, 2019): Compare probe accuracy to a control (random labels). If the probe does equally well on random labels, it's just memorizing.
-- **Minimum Description Length probes** (Voita & Titov, 2020): Measure the compression achieved by the probe, not just accuracy.
-- **Amnesic probing** (Elazar et al., 2021): Remove the probed information from the representation and measure downstream task degradation. This bridges probing with causal analysis.
+- **Selectivity** ([Hewitt & Liang, 2019](https://arxiv.org/abs/1909.03368)): Compare probe accuracy to a control (random labels). If the probe does equally well on random labels, it's just memorizing.
+- **Minimum Description Length probes** ([Voita & Titov, 2020](https://arxiv.org/abs/2003.12298)): Measure the compression achieved by the probe, not just accuracy.
+- **Amnesic probing** ([Elazar et al., 2021](https://arxiv.org/abs/2006.00995)): Remove the probed information from the representation and measure downstream task degradation. This bridges probing with causal analysis.
 
 ## Notable Applications
 
-- **Probing for world models:** Li et al. (2023) trained probes on Othello-GPT's activations and found that the model represents the board state as a linear feature, despite never seeing board representations during training. Ivanitskiy et al. (2023) found similar results for maze-solving transformers.
-- **CCS — Contrast-Consistent Search** (Burns et al., 2022): Discovers latent knowledge (e.g., truth vs. falsehood) in an unsupervised way by finding directions in activation space where logically negated statements map to opposite sides. This is probing without labels.
-- **Representation Engineering** (Zou et al., 2023): Find "concept directions" via probing, then steer model behavior by adding/subtracting these directions during inference.
+- **Probing for world models:** [Li et al. (2023)](https://arxiv.org/abs/2210.13382) trained probes on Othello-GPT's activations and found that the model represents the board state as a linear feature, despite never seeing board representations during training. [Ivanitskiy et al. (2023)](https://arxiv.org/abs/2312.02566) found similar results for maze-solving transformers.
+- **CCS — Contrast-Consistent Search** ([Burns et al., 2022](https://arxiv.org/abs/2212.03827)): Discovers latent knowledge (e.g., truth vs. falsehood) in an unsupervised way by finding directions in activation space where logically negated statements map to opposite sides. This is probing without labels.
+- **Representation Engineering** ([Zou et al., 2023](https://arxiv.org/abs/2310.01405)): Find "concept directions" via probing, then steer model behavior by adding/subtracting these directions during inference.
 
 ## Practical Notes
 
@@ -279,7 +279,7 @@ A recurring problem in mech interp is that the model's *features* (the things it
 
 ## The Toy Model
 
-Elhage et al. (2022) studied superposition in a minimal setting: an autoencoder $f : \mathbb{R}^n \to \mathbb{R}^m \to \mathbb{R}^n$ where $m < n$, trained to reconstruct sparse inputs. Key findings:
+[Elhage et al. (2022)](https://transformer-circuits.pub/2022/toy_model/index.html) studied superposition in a minimal setting: an autoencoder $f : \mathbb{R}^n \to \mathbb{R}^m \to \mathbb{R}^n$ where $m < n$, trained to reconstruct sparse inputs. Key findings:
 
 - When input features are sparse enough, the model packs $n > m$ features into $m$ dimensions by using *almost-orthogonal* directions. This works because sparse features rarely co-activate, so the interference (cross-talk) is tolerable.
 - The geometry depends on feature sparsity and importance: more important or less sparse features get dedicated dimensions; less important or sparser ones get squeezed into superposition.
@@ -331,7 +331,7 @@ The $L_1$ penalty on the hidden activations $z$ encourages sparsity: most featur
 
 ## What "Features" Look Like
 
-When trained on transformer residual stream activations, SAE features often correspond to interpretable concepts. Anthropic (Bricken et al., 2023; Templeton et al., 2024) and others have found features for:
+When trained on transformer residual stream activations, SAE features often correspond to interpretable concepts. Anthropic ([Bricken et al., 2023](https://transformer-circuits.pub/2023/monosemantic-features); [Templeton et al., 2024](https://transformer-circuits.pub/2024/scaling-monosemanticity/)) and others have found features for:
 
 - Specific languages, topics, and named entities.
 - Syntactic structures (e.g., "starts a parenthetical").
@@ -348,8 +348,8 @@ See https://www.neuronpedia.org/ to explore SAE features on a variety of models.
 
 Lots of variants of SAEs exist and are an active area of research, but the key idea of "decomposing activations into a sparse set of features" is the core. Some variants:
 
-- **TopK SAEs** (Makhzani & Frey, 2013; Gao et al., 2024): Replace the $L_1$ penalty with a hard constraint that exactly $k$ features activate per input. This avoids the sparsity-reconstruction tradeoff and eliminates dead features.
-- **Gated SAEs** (Rajamanoharan et al., 2024): Separate the "which features activate" decision from the "what magnitude" computation using a gating mechanism. Improves reconstruction at the same sparsity level.
+- **TopK SAEs** ([Makhzani & Frey, 2013](https://arxiv.org/abs/1312.5663); [Gao et al., 2024](https://arxiv.org/abs/2406.04093)): Replace the $L_1$ penalty with a hard constraint that exactly $k$ features activate per input. This avoids the sparsity-reconstruction tradeoff and eliminates dead features.
+- **Gated SAEs** ([Rajamanoharan et al., 2024](https://arxiv.org/abs/2404.16014)): Separate the "which features activate" decision from the "what magnitude" computation using a gating mechanism. Improves reconstruction at the same sparsity level.
 - **Transcoders** (Bricken et al., 2024): Instead of autoencoding a layer's activations, learn to predict the *next* layer's activations from the current layer's features. This gives a feature-level description of *computation* rather than just representation. Applied to MLP blocks: input is the MLP input, output is the MLP output, and the hidden features describe what the MLP "does" in interpretable terms.
 - **Attention SAEs / Multi-layer SAEs:** Apply SAEs to attention outputs, or train joint SAEs across multiple layers to capture features that evolve through the network.
 - **Matrioshka SAEs** ([Bussmann et al., 2025](https://arxiv.org/abs/2503.17547)): Train a hierarchy of SAEs where each layer's features are autoencoded by the next layer, creating a multi-scale decomposition of the model's representations. Helps with feature splitting.
@@ -396,7 +396,7 @@ We might instead try to decompose the model *weights* instead of the activations
 - **Scaling:** Can we do mech interp on frontier models (100B+ parameters)? Current successes are mostly on GPT-2 scale. Automated methods (ACDC, SAEs) help but are not yet competitive with manual analysis for depth of understanding.
 - **Compositionality:** We can find individual circuits, but how do they compose? How does the IOI circuit interact with the factual recall circuit when both are relevant?
 - **Computational superposition:** We can (partially) resolve representational superposition with SAEs, but computation through superposition is poorly understood.
-- **Detecting deception and latent knowledge:** The ultimate safety-relevant application. Can we tell if a model "knows" something it's not saying? CCS (Burns et al., 2022) is an early attempt, but it has known failure modes. Inner interpretability is uniquely positioned for this problem because, by definition, deceptive behavior cannot be detected from outputs alone.
+- **Detecting deception and latent knowledge:** The ultimate safety-relevant application. Can we tell if a model "knows" something it's not saying? CCS ([Burns et al., 2022](https://arxiv.org/abs/2212.03827)) is an early attempt, but it has known failure modes. Inner interpretability is uniquely positioned for this problem because, by definition, deceptive behavior cannot be detected from outputs alone.
 - **Universality:** Do different models learn the same features and circuits? If yes, interpreting one model transfers to others. Early evidence is suggestive (convergent representations across architectures) but not conclusive.
 - **Evaluation methodology:** We lack an "ImageNet for interpretability" — a standardized benchmark that measures whether interpretability tools are actually useful. Proposals like trojan detection challenges (Hubinger, 2021; Casper et al.) are promising but not yet adopted at scale.
 
@@ -406,19 +406,19 @@ We might instead try to decompose the model *weights* instead of the activations
 
 | Topic | Key Papers |
 |-------|-----------|
-| Residual stream / logit lens | nostalgebraist (2020), Belrose et al. (2023) |
-| Activation patching / causal tracing | Meng et al. (2022), Goldowsky-Dill et al. (2023) |
-| Circuits | Elhage et al. (2021), Olsson et al. (2022), Wang et al. (2023) |
-| ACDC | Conmy et al. (2023) |
-| Probing | Belinkov (2022) survey, Hewitt & Liang (2019), Burns et al. (2022) |
-| Superposition | Elhage et al. (2022) "Toy Models of Superposition" |
-| SAEs | Bricken et al. (2023), Templeton et al. (2024), Cunningham et al. (2023) |
+| Residual stream / logit lens | [nostalgebraist (2020)](https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens), [Belrose et al. (2023)](https://arxiv.org/abs/2303.08112) |
+| Activation patching / causal tracing | [Meng et al. (2022)](https://arxiv.org/abs/2202.05262), [Goldowsky-Dill et al. (2023)](https://arxiv.org/abs/2304.05969) |
+| Circuits | [Elhage et al. (2021)](https://transformer-circuits.pub/2021/framework/index.html), [Olsson et al. (2022)](https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html), [Wang et al. (2023)](https://arxiv.org/abs/2211.00593) |
+| ACDC | [Conmy et al. (2023)](https://arxiv.org/abs/2304.14997) |
+| Probing | [Belinkov (2022)](https://arxiv.org/abs/2102.12452) survey, [Hewitt & Liang (2019)](https://arxiv.org/abs/1909.03368), [Burns et al. (2022)](https://arxiv.org/abs/2212.03827) |
+| Superposition | [Elhage et al. (2022)](https://transformer-circuits.pub/2022/toy_model/index.html) "Toy Models of Superposition" |
+| SAEs | [Bricken et al. (2023)](https://transformer-circuits.pub/2023/monosemantic-features), [Templeton et al. (2024)](https://transformer-circuits.pub/2024/scaling-monosemanticity/), [Cunningham et al. (2023)](https://arxiv.org/abs/2309.08600) |
 | Transcoders | Bricken et al. (2024) |
-| Evaluation / critique | Casper, Räuker & Ho (2023), Bolukbasi et al. (2021) |
-| Representation engineering | Zou et al. (2023) |
+| Evaluation / critique | [Casper, Räuker & Ho (2023)](https://arxiv.org/abs/2207.13243), [Bolukbasi et al. (2021)](https://arxiv.org/abs/2104.07143) |
+| Representation engineering | [Zou et al. (2023)](https://arxiv.org/abs/2310.01405) |
 
 # Tooling
 
-- **TransformerLens** — Neel Nanda's library for transformer mech interp. Hooks, caching, activation patching out of the box.
-- **SAELens** — Training and analyzing SAEs on TransformerLens-compatible models.
-- **Neuronpedia** — Web interface for browsing SAE features.
+- **[TransformerLens](https://github.com/TransformerLensOrg/TransformerLens)** — Neel Nanda's library for transformer mech interp. Hooks, caching, activation patching out of the box.
+- **[SAELens](https://github.com/jbloomAus/SAELens)** — Training and analyzing SAEs on TransformerLens-compatible models.
+- **[Neuronpedia](https://www.neuronpedia.org/)** — Web interface for browsing SAE features.
