@@ -1,5 +1,14 @@
 ---
 title: Intro to mechanistic interpretability
+author: Michael Ivanitskiy
+linkcolor: blue
+geometry: margin=1in
+---
+
+**note:** for the most current version of this document, see 
+
+[`github.com/mines-opt-ml/decoding-gpt/blob/main/notebooks/interp-intro.md`](https://github.com/mines-opt-ml/decoding-gpt/blob/main/notebooks/interp-intro.md)
+
 ---
 
 *Mechanistic Interpretability* ("mechinterp") is the science of understanding how neural networks work, by understanding the mechanisms of their computation, and intervening in those mechanisms to test hypotheses.
@@ -400,7 +409,6 @@ We might instead try to decompose the model *weights* instead of the activations
 - **Universality:** Do different models learn the same features and circuits? If yes, interpreting one model transfers to others. Early evidence is suggestive (convergent representations across architectures) but not conclusive.
 - **Evaluation methodology:** We lack an "ImageNet for interpretability" — a standardized benchmark that measures whether interpretability tools are actually useful. Proposals like trojan detection challenges (Hubinger, 2021; Casper et al.) are promising but not yet adopted at scale.
 
----
 
 # Recommended Reading
 
