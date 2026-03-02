@@ -147,6 +147,16 @@ Think of the transformer as a graph: each attention head and MLP block is a node
 
 Patching measures *marginal* contributions, which can miss distributed or redundant computations. If two heads each contribute 30% and removing either one causes the other to compensate (backup behavior), patching either alone shows a small effect. This is a general problem with interventional methods.
 
+
+---
+
+
+# 2.b. Activation steering
+
+> [WIP]
+
+Originally from [Turner et al., 2023](https://arxiv.org/abs/2308.10248), activation steering allows modifying model behavior by patching in activations, usually gathered by combining (naively, the mean) of activations from a set of examples that share a concept. For example, to steer the model towards "positive sentiment", you could average the activations from a bunch of positive reviews and patch that into the model at inference time.
+
 ---
 
 # 3. Circuits: Discovery and Analysis
@@ -342,6 +352,7 @@ Lots of variants of SAEs exist and are an active area of research, but the key i
 - **Gated SAEs** (Rajamanoharan et al., 2024): Separate the "which features activate" decision from the "what magnitude" computation using a gating mechanism. Improves reconstruction at the same sparsity level.
 - **Transcoders** (Bricken et al., 2024): Instead of autoencoding a layer's activations, learn to predict the *next* layer's activations from the current layer's features. This gives a feature-level description of *computation* rather than just representation. Applied to MLP blocks: input is the MLP input, output is the MLP output, and the hidden features describe what the MLP "does" in interpretable terms.
 - **Attention SAEs / Multi-layer SAEs:** Apply SAEs to attention outputs, or train joint SAEs across multiple layers to capture features that evolve through the network.
+- **Matrioshka SAEs** ([Bussmann et al., 2025](https://arxiv.org/abs/2503.17547)): Train a hierarchy of SAEs where each layer's features are autoencoded by the next layer, creating a multi-scale decomposition of the model's representations. Helps with feature splitting.
 
 ## Evaluating SAEs
 
