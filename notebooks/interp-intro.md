@@ -367,6 +367,17 @@ Evaluation is an open problem. Current metrics:
 - Scaling SAEs to frontier models is expensive!
 - SAEs tell you what features exist, not how they're composed into computations. This is why transcoders and circuit analysis on SAE features are active research directions.
 
+
+
+# 7. Parameter-based methods
+
+SAEs help us understand activations, but intervening on them to influence model behavior is indirect: we have to modify the residual stream activations at every forward pass, and there is some evidence models can detect when this happens. Features that are not one-dimensionally linear ([Engels et al., 2024](https://arxiv.org/abs/2405.14860)) also pose a problem.
+
+We might instead try to decompose the model *weights* instead of the activations into meaningful components. Two promising approaches:
+
+- **Weight-sparse Transformers** Train a model with inherent sparsity in the weights to encourage interpretable components. See [Gao et al., 2025](https://arxiv.org/pdf/2511.13653)
+- **Parameter Decomposition:** Given a trained model, decompose weight matrices into a sum of rank-1 components which activate sparsely. Kind of like taking the SVD of the weight matrix, but for each forward pass we construct a low rank approximation of the original weight matrix by selecting a subset of these components based on the input. See [Bushnaq et al., 2024](https://arxiv.org/pdf/2506.20790).
+
 ---
 
 # Open Problems
