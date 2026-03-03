@@ -13,7 +13,7 @@ geometry: margin=1in
 
 *Mechanistic Interpretability* ("mechinterp") is the science of understanding how neural networks work, by understanding the mechanisms of their computation, and intervening in those mechanisms to test hypotheses.
 
-A good survey paper, one this document borrows from extensively, is [Räuker et al., 2023](https://arxiv.org/pdf/2207.13243).
+A good survey paper, one this document borrows from extensively, is [Räuker et al., 2023](https://arxiv.org/abs/2207.13243).
 
 **Prerequisites:** Familiarity with transformer architecture (attention, MLP blocks, residual stream), basic PyTorch, and comfort with linear algebra.
 
@@ -207,7 +207,7 @@ ACDC recovers known circuits (like IOI) and can discover new ones, though the re
 ## Other Automated Approaches
 
 - **Attribution patching** (Neel Nanda's approximation): Use gradients to approximate the patching effect, avoiding the $O(n)$ forward passes per edge. Much faster, though noisier.
-- **Subnetwork probing / circuit probing** (Conmy & Mavor-Parker, 2024): Train a mask over the computational graph to find minimal faithful subnetworks.
+- **Subnetwork probing / circuit probing:** Train a mask over the computational graph to find minimal faithful subnetworks.
 - **ACDC variants:** Edge-level vs. node-level pruning, different metrics (KL divergence, logit diff, etc.), iterative vs. one-shot.
 
 ## Validating Circuits
@@ -359,7 +359,7 @@ Lots of variants of SAEs exist and are an active area of research, but the key i
 
 - **TopK SAEs** ([Makhzani & Frey, 2013](https://arxiv.org/abs/1312.5663); [Gao et al., 2024](https://arxiv.org/abs/2406.04093)): Replace the $L_1$ penalty with a hard constraint that exactly $k$ features activate per input. This avoids the sparsity-reconstruction tradeoff and eliminates dead features.
 - **Gated SAEs** ([Rajamanoharan et al., 2024](https://arxiv.org/abs/2404.16014)): Separate the "which features activate" decision from the "what magnitude" computation using a gating mechanism. Improves reconstruction at the same sparsity level.
-- **Transcoders** (Bricken et al., 2024): Instead of autoencoding a layer's activations, learn to predict the *next* layer's activations from the current layer's features. This gives a feature-level description of *computation* rather than just representation. Applied to MLP blocks: input is the MLP input, output is the MLP output, and the hidden features describe what the MLP "does" in interpretable terms.
+- **Transcoders** ([Dunefsky et al., 2024](https://arxiv.org/abs/2406.11944)): Instead of autoencoding a layer's activations, learn to predict the *next* layer's activations from the current layer's features. This gives a feature-level description of *computation* rather than just representation. Applied to MLP blocks: input is the MLP input, output is the MLP output, and the hidden features describe what the MLP "does" in interpretable terms.
 - **Attention SAEs / Multi-layer SAEs:** Apply SAEs to attention outputs, or train joint SAEs across multiple layers to capture features that evolve through the network.
 - **Matrioshka SAEs** ([Bussmann et al., 2025](https://arxiv.org/abs/2503.17547)): Train a hierarchy of SAEs where each layer's features are autoencoded by the next layer, creating a multi-scale decomposition of the model's representations. Helps with feature splitting.
 
@@ -395,8 +395,8 @@ SAEs help us understand activations, but intervening on them to influence model 
 
 We might instead try to decompose the model *weights* instead of the activations into meaningful components. Two promising approaches:
 
-- **Weight-sparse Transformers** Train a model with inherent sparsity in the weights to encourage interpretable components. See [Gao et al., 2025](https://arxiv.org/pdf/2511.13653)
-- **Parameter Decomposition:** Given a trained model, decompose weight matrices into a sum of rank-1 components which activate sparsely. Kind of like taking the SVD of the weight matrix, but for each forward pass we construct a low rank approximation of the original weight matrix by selecting a subset of these components based on the input. See [Bushnaq et al., 2024](https://arxiv.org/pdf/2506.20790).
+- **Weight-sparse Transformers** Train a model with inherent sparsity in the weights to encourage interpretable components. See [Gao et al., 2025](https://arxiv.org/abs/2511.13653)
+- **Parameter Decomposition:** Given a trained model, decompose weight matrices into a sum of rank-1 components which activate sparsely. Kind of like taking the SVD of the weight matrix, but for each forward pass we construct a low rank approximation of the original weight matrix by selecting a subset of these components based on the input. See [Bushnaq et al., 2025](https://arxiv.org/abs/2506.20790).
 
 ---
 
@@ -421,8 +421,8 @@ We might instead try to decompose the model *weights* instead of the activations
 | Probing | [Belinkov (2022)](https://arxiv.org/abs/2102.12452) survey, [Hewitt & Liang (2019)](https://arxiv.org/abs/1909.03368), [Burns et al. (2022)](https://arxiv.org/abs/2212.03827) |
 | Superposition | [Elhage et al. (2022)](https://transformer-circuits.pub/2022/toy_model/index.html) "Toy Models of Superposition" |
 | SAEs | [Bricken et al. (2023)](https://transformer-circuits.pub/2023/monosemantic-features), [Templeton et al. (2024)](https://transformer-circuits.pub/2024/scaling-monosemanticity/), [Cunningham et al. (2023)](https://arxiv.org/abs/2309.08600) |
-| Transcoders | Bricken et al. (2024) |
-| Evaluation / critique | [Casper, Räuker & Ho (2023)](https://arxiv.org/abs/2207.13243), [Bolukbasi et al. (2021)](https://arxiv.org/abs/2104.07143) |
+| Transcoders | [Dunefsky et al. (2024)](https://arxiv.org/abs/2406.11944) |
+| Evaluation / critique | [Räuker et al. (2023)](https://arxiv.org/abs/2207.13243), [Bolukbasi et al. (2021)](https://arxiv.org/abs/2104.07143) |
 | Representation engineering | [Zou et al. (2023)](https://arxiv.org/abs/2310.01405) |
 
 # Tooling
