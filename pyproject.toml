@@ -22,6 +22,7 @@ dependencies = [
 	"torchvision",
 	"jaxtyping",
 	"transformer_lens",
+	"scikit-learn",
 	# custom utilities
 	"muutils>=0.6.19",
 	"zanj>=0.3.1",

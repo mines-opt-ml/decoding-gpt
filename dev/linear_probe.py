@@ -1,7 +1,10 @@
+#%%
+
 import sys
 import json
 import torch
 import numpy as np
+import pandas as pd
 from transformer_lens import HookedTransformer
 from datasets import load_dataset
 from sklearn.linear_model import LogisticRegression, Ridge
@@ -47,16 +50,17 @@ feature_name = sys.argv[1] if len(sys.argv) > 1 else "in_quotes"
 feature_fn, feature_type = FEATURES[feature_name]
 print(f"Feature: {feature_name} (type: {feature_type})")
 
+#%%
 # ── Load model & data ─────────────────────────────────────────────
 
 model = HookedTransformer.from_pretrained(MODEL)
-ds = load_dataset("NeelNanda/pile-10k", split="train")
+DATASET = pd.read_json("dev/pile_10k.jsonl", orient="records", lines=True)
 
 all_tok_strs: list[list[str]] = []
 all_labels: list[list] = []
 all_tok_ids: list[torch.Tensor] = []
 
-for text in ds["text"]:
+for text in DATASET["text"]:
     toks = model.to_tokens(text, prepend_bos=True)
     if toks.shape[1] < 16:
         continue
@@ -71,6 +75,7 @@ for text in ds["text"]:
 
 print(f"Collected {len(all_tok_strs)} documents")
 
+#%%
 # ── Collect hidden states ─────────────────────────────────────────
 
 n_layers = model.cfg.n_layers
@@ -91,6 +96,7 @@ with torch.no_grad():
         if (idx + 1) % 20 == 0:
             print(f"  {idx + 1}/{len(all_tok_ids)}")
 
+#%%
 # ── Train / test split by document ────────────────────────────────
 
 n_train = int(len(all_tok_strs) * 0.75)
@@ -133,6 +139,7 @@ for lname in layer_names:
     trained_models[lname] = clf if feature_type == "bool" else reg
     print(f"  {lname}: {layer_results[-1]}")
 
+#%%
 # ── Build display examples ─────────────────────────────────────────
 
 examples = []
