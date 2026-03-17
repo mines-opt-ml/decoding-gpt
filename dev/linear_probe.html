@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Linear Probe</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #fafafa;
+  color: #222;
+  font: 13px/1.4 "Fira Code", "Consolas", "Monaco", monospace;
+  padding: 24px;
+}
+h1 { font-size: 15px; margin-bottom: 4px; font-weight: 600; }
+h2 { font-size: 13px; margin: 18px 0 6px; font-weight: 600; color: #555; }
+.meta { color: #888; font-size: 12px; margin-bottom: 12px; }
+
+/* ── chart ──────────────────────── */
+.chart-row {
+  display: flex; align-items: center; gap: 6px;
+  margin: 2px 0; height: 20px;
+}
+.chart-label {
+  width: 48px; text-align: right; color: #888; font-size: 11px; flex-shrink: 0;
+}
+.chart-bar-bg {
+  flex: 1; max-width: 320px; height: 14px;
+  background: #eee; border-radius: 2px; position: relative;
+}
+.chart-bar {
+  height: 100%; background: #7c5cbf; border-radius: 2px;
+  transition: width .3s;
+}
+.chart-baseline {
+  position: absolute; top: -2px; bottom: -2px;
+  border-left: 2px dashed #c0392b; z-index: 1;
+}
+.chart-val { width: 48px; font-size: 11px; color: #555; }
+
+/* ── controls ───────────────────── */
+.controls { margin: 8px 0 12px; }
+.controls select {
+  font: inherit; padding: 2px 4px; border: 1px solid #ccc; border-radius: 3px;
+}
+
+/* ── legend ──────────────────────── */
+.legend { display: flex; gap: 14px; margin-bottom: 10px; font-size: 11px; color: #555; }
+.legend-swatch {
+  display: inline-block; width: 12px; height: 12px;
+  border: 1px solid #ccc; border-radius: 2px; vertical-align: middle;
+  margin-right: 3px;
+}
+
+/* ── examples ───────────────────── */
+.example {
+  margin-bottom: 14px; padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+.row-label {
+  font-size: 10px; color: #999; margin: 2px 0 1px 2px;
+}
+.token-row { display: flex; flex-wrap: wrap; gap: 1px; margin-bottom: 2px; }
+.token {
+  padding: 1px 3px; border-radius: 2px; white-space: pre;
+  font: inherit; font-size: 12px; border: 1px solid transparent;
+  cursor: default;
+}
+.token:hover { border-color: #999; }
+</style>
+</head>
+<body>
+<h1 id="title">Linear Probe</h1>
+<div class="meta" id="meta"></div>
+
+<h2>Performance by Layer</h2>
+<div id="chart"></div>
+
+<h2>Examples</h2>
+<div class="controls">
+  <label>Layer: <select id="layer-select"></select></label>
+</div>
+<div id="legend"></div>
+<div id="examples"></div>
+
+<script>
+fetch("linear_probe.json")
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(render)
+  .catch(() => {});
+
+function visTok(s) {
+  return s
+    .replace(/ /g, "\u2581")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t");
+}
+
+function intColor(t) {
+  // t in [0,1] → light to dark purple
+  const l = 95 - t * 55;
+  return `hsl(270, 55%, ${l}%)`;
+}
+
+const BOOL_COLORS = {
+  tp: "#c39bd3", // purple – both true
+  fn: "#f1948a", // red   – gt true, pred false
+  fp: "#85c1e9", // blue  – gt false, pred true
+  tn: "#f5f5f5", // white – both false
+};
+
+function render(data) {
+  document.getElementById("title").textContent = "Linear Probe: " + data.feature_name;
+  document.getElementById("meta").textContent =
+    data.n_train + " train, " + data.n_test + " test documents";
+
+  // ── chart ────────────────────────────
+  const chart = document.getElementById("chart");
+  const metric = data.feature_type === "bool" ? "accuracy" : "r2";
+  const metricLabel = data.feature_type === "bool" ? "Accuracy" : "R\u00B2";
+
+  data.layers.forEach(layer => {
+    const val = layer[metric];
+    const row = document.createElement("div");
+    row.className = "chart-row";
+
+    const label = document.createElement("span");
+    label.className = "chart-label";
+    label.textContent = layer.label;
+
+    const barBg = document.createElement("div");
+    barBg.className = "chart-bar-bg";
+
+    const bar = document.createElement("div");
+    bar.className = "chart-bar";
+    bar.style.width = Math.max(val, 0) * 100 + "%";
+    barBg.appendChild(bar);
+
+    if (data.baseline > 0) {
+      const bl = document.createElement("div");
+      bl.className = "chart-baseline";
+      bl.style.left = data.baseline * 100 + "%";
+      bl.title = "baseline: " + data.baseline.toFixed(3);
+      barBg.appendChild(bl);
+    }
+
+    const valSpan = document.createElement("span");
+    valSpan.className = "chart-val";
+    valSpan.textContent = val.toFixed(3);
+
+    row.appendChild(label);
+    row.appendChild(barBg);
+    row.appendChild(valSpan);
+    chart.appendChild(row);
+  });
+
+  // ── layer selector ───────────────────
+  const select = document.getElementById("layer-select");
+  data.layer_names.forEach((ln, i) => {
+    const opt = document.createElement("option");
+    opt.value = ln;
+    opt.textContent = ln;
+    if (i === data.layer_names.length - 1) opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  // ── legend ───────────────────────────
+  const legendEl = document.getElementById("legend");
+  if (data.feature_type === "bool") {
+    legendEl.className = "legend";
+    [
+      ["tp", "both true (TP)"],
+      ["fn", "gt true, pred false (FN)"],
+      ["fp", "gt false, pred true (FP)"],
+      ["tn", "both false (TN)"],
+    ].forEach(([key, text]) => {
+      const span = document.createElement("span");
+      const swatch = document.createElement("span");
+      swatch.className = "legend-swatch";
+      swatch.style.backgroundColor = BOOL_COLORS[key];
+      span.appendChild(swatch);
+      span.appendChild(document.createTextNode(text));
+      legendEl.appendChild(span);
+    });
+  } else {
+    legendEl.className = "legend";
+    const span = document.createElement("span");
+    span.textContent = "color intensity \u2192 feature value";
+    legendEl.appendChild(span);
+  }
+
+  // ── examples ─────────────────────────
+  function renderExamples() {
+    const layer = select.value;
+    const container = document.getElementById("examples");
+    container.innerHTML = "";
+
+    data.examples.forEach(ex => {
+      const div = document.createElement("div");
+      div.className = "example";
+      const preds = ex.predictions[layer];
+
+      if (data.feature_type === "bool") {
+        const row = document.createElement("div");
+        row.className = "token-row";
+        ex.tokens.forEach((tok, ti) => {
+          const span = document.createElement("span");
+          span.className = "token";
+          span.textContent = visTok(tok);
+          const gt = ex.ground_truth[ti];
+          const pr = preds[ti];
+          if (gt && pr)       span.style.backgroundColor = BOOL_COLORS.tp;
+          else if (gt && !pr) span.style.backgroundColor = BOOL_COLORS.fn;
+          else if (!gt && pr) span.style.backgroundColor = BOOL_COLORS.fp;
+          else                span.style.backgroundColor = BOOL_COLORS.tn;
+          span.title = "gt=" + gt + "  pred=" + pr;
+          row.appendChild(span);
+        });
+        div.appendChild(row);
+      } else {
+        const maxVal = Math.max(
+          ...ex.ground_truth, ...preds, 1
+        );
+
+        // ground truth row
+        const lbl1 = document.createElement("div");
+        lbl1.className = "row-label";
+        lbl1.textContent = "truth";
+        div.appendChild(lbl1);
+        const row1 = document.createElement("div");
+        row1.className = "token-row";
+        ex.tokens.forEach((tok, ti) => {
+          const span = document.createElement("span");
+          span.className = "token";
+          span.textContent = visTok(tok);
+          span.style.backgroundColor = intColor(ex.ground_truth[ti] / maxVal);
+          span.title = "value=" + ex.ground_truth[ti];
+          row1.appendChild(span);
+        });
+        div.appendChild(row1);
+
+        // prediction row
+        const lbl2 = document.createElement("div");
+        lbl2.className = "row-label";
+        lbl2.textContent = "pred";
+        div.appendChild(lbl2);
+        const row2 = document.createElement("div");
+        row2.className = "token-row";
+        ex.tokens.forEach((tok, ti) => {
+          const span = document.createElement("span");
+          span.className = "token";
+          span.textContent = visTok(tok);
+          span.style.backgroundColor = intColor(preds[ti] / maxVal);
+          span.title = "value=" + preds[ti];
+          row2.appendChild(span);
+        });
+        div.appendChild(row2);
+      }
+
+      container.appendChild(div);
+    });
+  }
+
+  select.addEventListener("change", renderExamples);
+  renderExamples();
+}
+</script>
+</body>
+</html>

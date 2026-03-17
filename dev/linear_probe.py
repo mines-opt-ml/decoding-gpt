@@ -1,4 +1,5 @@
 #%%
+from pathlib import Path
 
 import sys
 import json
@@ -9,10 +10,10 @@ from transformer_lens import HookedTransformer
 from datasets import load_dataset
 from sklearn.linear_model import LogisticRegression, Ridge
 
-MODEL = "pythia-14m"
-N_DOCS = 80
+MODEL_NAME = "pythia-14m"
+N_DOCS = 1000
 MAX_SEQ_LEN = 256
-N_DISPLAY = 10
+N_DISPLAY = 100
 OUTPUT = "linear_probe.json"
 
 # ── Feature functions ──────────────────────────────────────────────
@@ -46,26 +47,28 @@ FEATURES = {
 
 # ── Config ─────────────────────────────────────────────────────────
 
-feature_name = sys.argv[1] if len(sys.argv) > 1 else "in_quotes"
-feature_fn, feature_type = FEATURES[feature_name]
-print(f"Feature: {feature_name} (type: {feature_type})")
+FEATURE_NAME: str = "in_quotes"
+feature_fn, feature_type = FEATURES[FEATURE_NAME]
+print(f"Feature: {FEATURE_NAME} (type: {feature_type})")
 
 #%%
 # ── Load model & data ─────────────────────────────────────────────
 
-model = HookedTransformer.from_pretrained(MODEL)
-DATASET = pd.read_json("dev/pile_10k.jsonl", orient="records", lines=True)
+MODEL = HookedTransformer.from_pretrained(MODEL_NAME)
+print(MODEL)
+DATASET = pd.read_json(Path("pile_10k.jsonl"), lines=True)
+print(DATASET)
 
 all_tok_strs: list[list[str]] = []
 all_labels: list[list] = []
 all_tok_ids: list[torch.Tensor] = []
 
 for text in DATASET["text"]:
-    toks = model.to_tokens(text, prepend_bos=True)
+    toks = MODEL.to_tokens(text, prepend_bos=True)
     if toks.shape[1] < 16:
         continue
     toks = toks[0, :MAX_SEQ_LEN]
-    strs = [model.tokenizer.decode(t.item()) for t in toks]
+    strs = [MODEL.tokenizer.decode(t.item()) for t in toks]
     labels = feature_fn(strs)
     all_tok_strs.append(strs)
     all_labels.append(labels)
@@ -78,7 +81,7 @@ print(f"Collected {len(all_tok_strs)} documents")
 #%%
 # ── Collect hidden states ─────────────────────────────────────────
 
-n_layers = model.cfg.n_layers
+n_layers = MODEL.cfg.n_layers
 layer_names = ["embed"] + [f"L{i}" for i in range(n_layers)]
 hook_names = ["blocks.0.hook_resid_pre"] + [
     f"blocks.{i}.hook_resid_post" for i in range(n_layers)
@@ -90,7 +93,7 @@ all_hiddens: dict[str, list[np.ndarray]] = {ln: [] for ln in layer_names}
 print("Running forward passes...")
 with torch.no_grad():
     for idx, tok_ids in enumerate(all_tok_ids):
-        _, cache = model.run_with_cache(tok_ids.unsqueeze(0))
+        _, cache = MODEL.run_with_cache(tok_ids.unsqueeze(0))
         for lname, hname in zip(layer_names, hook_names):
             all_hiddens[lname].append(cache[hname][0].cpu().numpy())
         if (idx + 1) % 20 == 0:
@@ -127,6 +130,7 @@ for lname in layer_names:
         preds = clf.predict(test_X)
         acc = float((preds == test_y.astype(int)).mean())
         layer_results.append({"label": lname, "accuracy": round(acc, 4)})
+        trained_models[lname] = clf
     else:
         reg = Ridge(alpha=1.0)
         reg.fit(train_X, train_y)
@@ -135,8 +139,7 @@ for lname in layer_names:
         ss_tot = float(((test_y - test_y.mean()) ** 2).sum())
         r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
         layer_results.append({"label": lname, "r2": round(r2, 4)})
-
-    trained_models[lname] = clf if feature_type == "bool" else reg
+        trained_models[lname] = reg
     print(f"  {lname}: {layer_results[-1]}")
 
 #%%
@@ -163,7 +166,7 @@ for di in test_idx[:N_DISPLAY]:
 # ── Write output ───────────────────────────────────────────────────
 
 data = {
-    "feature_name": feature_name,
+    "feature_name": FEATURE_NAME,
     "feature_type": feature_type,
     "n_train": n_train,
     "n_test": len(test_idx),
